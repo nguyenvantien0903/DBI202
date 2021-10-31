@@ -1,4 +1,4 @@
-﻿create database Film
+create database Film
 go
 USE [Film]
 GO
@@ -455,9 +455,7 @@ values(1,41),
 (30,50)
 
 -----------------------------------------------feature
--------list all the film
-select * from film;
-
+-------------------------USER
 
 --------User see their profile
 create procedure View_Profile @user_ID int
@@ -497,6 +495,7 @@ end
 exec View_Purchased_Plan 1
 
 
+------------------------FILM
 ---------search film by name
 create procedure Search_film_name @name varchar(255)
 as
@@ -517,10 +516,10 @@ begin
 	from relation_film_star r
 	join Star on r.star_id=Star.star_id
 	join Film on r.film_id=Film.film_id
-	where Star.star_name=@star_name
+	where Star.star_name LIKE CONCAT(@star_name,'%')
 end
 
-exec Search_film_star 'Kazuya Nakai'
+exec Search_film_star 'Kawasumi A'
 
 
 ---------search film by nation
@@ -558,11 +557,17 @@ exec Search_film_episode 0      ---0 la 1 tap ,1 la phim nhieu tap
 
 
 ------------------search film by genre
-select * from relation_film_genre
+create procedure Search_film_genre @genre varchar(255)
+as
+begin
+	select film_name,episode,film_year
+	from relation_film_genre r
+	join Film on r.film_id=film.film_id
+	join Genres on r.genre_id=Genres.genre_id
+	where Genres.genre_name LIKE CONCAT(@genre,'%')
+end
 
-
-
-
+exec Search_film_genre 'Ise'
 
 
 -------------search film by year
@@ -574,8 +579,29 @@ begin
 	where film_year =@year
 end
 
-exec Search_film_year 2021
+exec Search_film_year 2020
 
 
--------------
-select * from Restricted
+-------------check if user can see the film with their age
+create procedure Check_user_age @user_age int, @res_id varchar(255), @t int output
+as
+begin
+	if @user_age < (
+		select limit 
+		from Restricted
+		where res_id=@res_id
+	)
+		begin
+			set @t=0
+		end
+	else
+		begin
+			set @t=1
+		end
+end
+
+declare @res int
+exec Check_user_age 17,'R',@res output------ 0 la khong du tuoi 1 la du tuoi xem phim
+print @res
+
+-----------------
