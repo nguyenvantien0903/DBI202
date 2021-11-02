@@ -604,4 +604,29 @@ declare @res int
 exec Check_user_age 17,'R',@res output------ 0 la khong du tuoi 1 la du tuoi xem phim
 print @res
 
------------------
+-----------------excel angle
+select f.film_id as ID,film_name as Name,duration as Duration,f.res_id as Limit,film_nation as Country,A.Genre,B.Star,direc as Direction,episode as Episode,film_des as Describe
+from Film f, ( SELECT DISTINCT film_id,
+SUBSTRING(
+(
+SELECT ',' + C1.genre_name
+FROM Genres c1,relation_film_genre f1
+WHERE f1.film_id = f2.film_id and f1.genre_id=c1.genre_id
+ORDER BY f1.film_id
+FOR XML PATH ('')
+), 2, 1000) [Genre]
+FROM Genres c2, relation_film_genre f2
+where f2.genre_id=c2.genre_id) A, ( SELECT DISTINCT film_id,
+SUBSTRING(
+(
+SELECT ',' + C1.star_name
+FROM Star c1,relation_film_star f1
+WHERE f1.film_id = f2.film_id and f1.star_id=c1.star_id
+ORDER BY f1.film_id
+FOR XML PATH ('')
+), 2, 1000) [Star]
+FROM Star c2, relation_film_star f2
+where f2.star_id=c2.star_id) B
+ where f.film_id=A.film_id and f.film_id=B.film_id
+ group by f.film_id,film_name,duration,f.res_id,film_nation,A.Genre,B.Star,direc,episode,film_des
+ order by f.film_id
