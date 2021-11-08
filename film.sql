@@ -456,6 +456,28 @@ values(1,41),
 
 -----------------------------------------------feature
 -------------------------USER
+---------Register User
+create procedure Register_User @user_name varchar(255),@mail varchar(255),@dob date,@pw varchar(255),@user_nation varchar(255)
+as
+begin
+	Insert into Users(user_name,mail,dob,pw,user_nation)
+	values(@user_name,@mail,@dob,@pw,@user_nation)
+end
+
+exec Register_User 'A','A@gmail.com','1111-11-11','123456','US'
+
+------------User login- return 1 if user exist and password right else return 0
+create procedure User_Login @user_name varchar(255),@pw varchar(255),@res int output
+as
+begin
+	select @res = count(*)
+	from Users
+	where user_name=@user_name and pw=@pw
+end
+
+declare @res int 
+exec User_Login 'A','12345',@res output
+print @res
 
 --------User see their profile
 create procedure View_Profile @user_ID int
@@ -496,6 +518,14 @@ exec View_Purchased_Plan 1
 
 
 ------------------------FILM
+---------add Film
+create procedure Add_Film @film_name varchar(255),@episode int,@film_year int,@film_nation varchar(255),@direc varchar(255),@film_des varchar(255),@duration int,@res_id varchar(255)
+as
+begin
+	Insert into Film(film_name,episode,film_year,film_nation,direc,film_des,duration,res_id)
+	values(@film_name,@episode,@film_year,@film_nation,@direc,@film_des,@duration,@res_id)
+end
+.
 ---------search film by name
 create procedure Search_film_name @name varchar(255)
 as
