@@ -516,6 +516,8 @@ end
 
 exec View_Purchased_Plan 1
 
+select * from Subscription
+
 
 ------------------------FILM
 ---------add Film
@@ -612,14 +614,26 @@ end
 exec Search_film_year 2020
 
 
--------------check if user can see the film with their age
-create procedure Check_user_age @user_age int, @res_id varchar(255), @t int output
+-----------------check if user can watch film because of age and buy amount
+create procedure Check_user_can_watch_film @user_id int,@user_age int, @res_id varchar(255), @t int output
 as
 begin
-	if @user_age < (
+	if (@user_age < (
 		select limit 
 		from Restricted
 		where res_id=@res_id
+	)or (
+			select count(*) ----------so phim nguoi do da xem
+			from Views
+			where user_id=@user_id
+		)>=
+		(
+			select SUM(s.limit) ------------ so phim toi da co the xem khi mua theo goi
+			from Purchase p
+			join Subscription s on p.plan_id=s.plan_id
+			where p.user_id=@user_id
+		)
+	
 	)
 		begin
 			set @t=0
@@ -630,11 +644,13 @@ begin
 		end
 end
 
+
 declare @res int
-exec Check_user_age 17,'R',@res output------ 0 la khong du tuoi 1 la du tuoi xem phim
+exec Check_user_can_watch_film 1,17,'R',@res output------ 0 la khong duoc xem phim 1 la duoc xem phim
 print @res
 
------------------excel angle
+
+-----------------xuat ra tat ca film
 select f.film_id as ID,film_name as Name,duration as Duration,f.res_id as Limit,film_nation as Country,A.Genre,B.Star,direc as Direction,episode as Episode,film_des as Describe
 from Film f, ( SELECT DISTINCT film_id,
 SUBSTRING(
